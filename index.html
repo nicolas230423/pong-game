@@ -1,1 +1,277 @@
-<!DOCTYPE html>\n<html lang="en">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Pong Game</title>\n    <style>\n        body {\n            display: flex;\n            flex-direction: column;\n            align-items: center;\n            justify-content: center;\n            height: 100vh;\n            background-color: #000;\n            color: #fff;\n        }\n        canvas {\n            border: 1px solid #fff;\n        }\n        #score {\n            font-size: 24px;\n            margin: 20px;\n        }\n    </style>\n</head>\n<body>\n    <h1>Pong Game</h1>\n    <div id="score">Score: Player1 0 - 0 Player2</div>\n    <canvas id="pong" width="800" height="400"></canvas>\n    <div id="instructions">Instructions: Use arrow keys for player 1 and W/S keys for player 2.</div>\n    <script>\n        const canvas = document.getElementById('pong');\n        const ctx = canvas.getContext('2d');\n        // Game Variables\n        const paddleWidth = 10;\n        const paddleHeight = 100;\n        let player1Score = 0;\n        let player2Score = 0;\n        // Paddle Positions\n        const player1 = {\n            x: 0,\n            y: canvas.height / 2 - paddleHeight / 2,\n            width: paddleWidth,\n            height: paddleHeight,\n            up: false,\n            down: false\n        };\n        const player2 = {\n            x: canvas.width - paddleWidth,\n            y: canvas.height / 2 - paddleHeight / 2,\n            width: paddleWidth,\n            height: paddleHeight,\n            up: false,\n            down: false\n        };\n        const ball = {\n            x: canvas.width / 2,\n            y: canvas.height / 2,\n            radius: 10,\n            speed: 5,\n            dx: 5,\n            dy: 5\n        };\n        // Control Setup\n        document.addEventListener('keydown', (event) => {\n            switch(event.key) {\n                case 'ArrowUp':\n                    player1.up = true;\n                    break;\n                case 'ArrowDown':\n                    player1.down = true;\n                    break;\n                case 'w':\n                    player2.up = true;\n                    break;\n                case 's':\n                    player2.down = true;\n                    break;\n            }\n        });\n        document.addEventListener('keyup', (event) => {\n            switch(event.key) {\n                case 'ArrowUp':\n                    player1.up = false;\n                    break;\n                case 'ArrowDown':\n                    player1.down = false;\n                    break;\n                case 'w':\n                    player2.up = false;\n                    break;\n                case 's':\n                    player2.down = false;\n                    break;\n            }\n        });\n        function draw() {\n            // Clear Canvas\n            ctx.clearRect(0, 0, canvas.width, canvas.height);\n            // Draw Paddle 1\n            ctx.fillStyle = '#fff';\n            ctx.fillRect(player1.x, player1.y, player1.width, player1.height);\n            // Draw Paddle 2\n            ctx.fillRect(player2.x, player2.y, player2.width, player2.height);\n            // Draw Ball\n            ctx.beginPath();\n            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);\n            ctx.fill();\n        }\n        function update() {\n            // Move Paddles\n            if (player1.up && player1.y > 0) player1.y -= 10;\n            if (player1.down && player1.y < canvas.height - player1.height) player1.y += 10;\n            if (player2.up && player2.y > 0) player2.y -= 10;\n            if (player2.down && player2.y < canvas.height - player2.height) player2.y += 10;\n            // Move Ball\n            ball.x += ball.dx;\n            ball.y += ball.dy;\n            // Bounce Ball\n            if (ball.y + ball.radius >= canvas.height || ball.y - ball.radius <= 0) ball.dy *= -1;\n            // Collision with paddles\n            if (ball.x - ball.radius <= player1.x + player1.width && ball.y > player1.y && ball.y < player1.y + player1.height) ball.dx *= -1;\n            if (ball.x + ball.radius >= player2.x && ball.y > player2.y && ball.y < player2.y + player2.height) ball.dx *= -1;\n            // Scoring\n            if (ball.x + ball.radius < 0) {\n                player2Score++;\n                resetBall();\n            }\n            if (ball.x - ball.radius > canvas.width) {\n                player1Score++;\n                resetBall();\n            }\n            // Update Score\n            document.getElementById('score').innerText = `Score: Player1 ${player1Score} - ${player2Score} Player2`;\n        }\n        function resetBall() {\n            ball.x = canvas.width / 2;\n            ball.y = canvas.height / 2;\n            ball.dx *= -1;\n        }\n        function gameLoop() {\n            draw();\n            update();\n            requestAnimationFrame(gameLoop);\n        }\n        // Start Game Loop\n        gameLoop();\n    </script>\n</body>\n</html>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pong Game</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --background: #111111;
+      --panel: #1f2933;
+      --court: #050505;
+      --line: #f7f7f7;
+      --accent: #2dd4bf;
+      --text: #f5f5f5;
+      --muted: #b8c2cc;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--background);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    main {
+      width: min(920px, calc(100% - 32px));
+      display: grid;
+      gap: 16px;
+      justify-items: center;
+      padding: 24px 0;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 40px;
+      line-height: 1.1;
+      text-align: center;
+    }
+
+    .score {
+      width: 100%;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 8px;
+      background: var(--panel);
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    canvas {
+      width: 100%;
+      max-width: 800px;
+      aspect-ratio: 2 / 1;
+      display: block;
+      border: 2px solid var(--line);
+      border-radius: 8px;
+      background: var(--court);
+    }
+
+    .instructions {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .key {
+      padding: 2px 7px;
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      border-radius: 6px;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.08);
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Pong Game</h1>
+    <div class="score" id="score">Jugador 1: 0 | Jugador 2: 0</div>
+    <canvas id="pong" width="800" height="400" aria-label="Cancha del juego Pong"></canvas>
+    <p class="instructions">
+      Jugador 1: <span class="key">ArrowUp</span> <span class="key">ArrowDown</span>
+      | Jugador 2: <span class="key">W</span> <span class="key">S</span>
+    </p>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('pong');
+    const ctx = canvas.getContext('2d');
+    const scoreElement = document.getElementById('score');
+
+    const paddle = {
+      width: 10,
+      height: 100,
+      speed: 10
+    };
+
+    const player1 = {
+      x: 0,
+      y: canvas.height / 2 - paddle.height / 2,
+      width: paddle.width,
+      height: paddle.height,
+      up: false,
+      down: false
+    };
+
+    const player2 = {
+      x: canvas.width - paddle.width,
+      y: canvas.height / 2 - paddle.height / 2,
+      width: paddle.width,
+      height: paddle.height,
+      up: false,
+      down: false
+    };
+
+    const ball = {
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      radius: 10,
+      dx: 5,
+      dy: 5
+    };
+
+    const score = {
+      player1: 0,
+      player2: 0
+    };
+
+    const controls = {
+      ArrowUp: ['player1', 'up'],
+      ArrowDown: ['player1', 'down'],
+      w: ['player2', 'up'],
+      W: ['player2', 'up'],
+      s: ['player2', 'down'],
+      S: ['player2', 'down']
+    };
+
+    function setControlState(key, isPressed) {
+      const control = controls[key];
+
+      if (!control) {
+        return;
+      }
+
+      const [player, direction] = control;
+      const target = player === 'player1' ? player1 : player2;
+      target[direction] = isPressed;
+    }
+
+    function drawCourt() {
+      ctx.fillStyle = '#050505';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.28)';
+      ctx.setLineDash([12, 14]);
+      ctx.beginPath();
+      ctx.moveTo(canvas.width / 2, 0);
+      ctx.lineTo(canvas.width / 2, canvas.height);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    function drawPaddle(player) {
+      ctx.fillStyle = '#f7f7f7';
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+    }
+
+    function drawBall() {
+      ctx.fillStyle = '#2dd4bf';
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function draw() {
+      drawCourt();
+      drawPaddle(player1);
+      drawPaddle(player2);
+      drawBall();
+    }
+
+    function movePlayer(player) {
+      if (player.up && player.y > 0) {
+        player.y -= paddle.speed;
+      }
+
+      if (player.down && player.y < canvas.height - player.height) {
+        player.y += paddle.speed;
+      }
+    }
+
+    function hasPaddleCollision(player) {
+      const isInsideY = ball.y > player.y && ball.y < player.y + player.height;
+      const touchesLeftPaddle = ball.x - ball.radius <= player.x + player.width;
+      const touchesRightPaddle = ball.x + ball.radius >= player.x;
+
+      if (player === player1) {
+        return touchesLeftPaddle && isInsideY;
+      }
+
+      return touchesRightPaddle && isInsideY;
+    }
+
+    function resetBall(direction) {
+      ball.x = canvas.width / 2;
+      ball.y = canvas.height / 2;
+      ball.dx = direction * Math.abs(ball.dx);
+      ball.dy = Math.random() > 0.5 ? 5 : -5;
+    }
+
+    function updateScore() {
+      scoreElement.textContent = `Jugador 1: ${score.player1} | Jugador 2: ${score.player2}`;
+    }
+
+    function update() {
+      movePlayer(player1);
+      movePlayer(player2);
+
+      ball.x += ball.dx;
+      ball.y += ball.dy;
+
+      if (ball.y + ball.radius >= canvas.height || ball.y - ball.radius <= 0) {
+        ball.dy *= -1;
+      }
+
+      if (hasPaddleCollision(player1)) {
+        ball.dx = Math.abs(ball.dx);
+      }
+
+      if (hasPaddleCollision(player2)) {
+        ball.dx = -Math.abs(ball.dx);
+      }
+
+      if (ball.x + ball.radius < 0) {
+        score.player2 += 1;
+        resetBall(1);
+      }
+
+      if (ball.x - ball.radius > canvas.width) {
+        score.player1 += 1;
+        resetBall(-1);
+      }
+
+      updateScore();
+    }
+
+    function gameLoop() {
+      update();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    document.addEventListener('keydown', (event) => {
+      setControlState(event.key, true);
+    });
+
+    document.addEventListener('keyup', (event) => {
+      setControlState(event.key, false);
+    });
+
+    gameLoop();
+  </script>
+</body>
+</html>
